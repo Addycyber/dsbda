@@ -86,3 +86,99 @@ public class WeatherAverage {
         System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Step 1: Install Java and Hadoop
+If you haven't installed Hadoop yet, run:
+
+bash
+sudo apt update
+sudo apt install openjdk-11-jdk
+wget https://downloads.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
+tar -xzf hadoop-3.3.6.tar.gz
+mv hadoop-3.3.6 /usr/local/hadoop
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+export HADOOP_HOME=/usr/local/hadoop
+export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+(Configure Hadoop further in $HADOOP_HOME/etc/hadoop/ if needed.)
+
+Step 2: Prepare the Input File
+Create a sample CSV file (weather_data.csv):
+
+bash
+echo -e "Date,Temperature,DewPoint,WindSpeed\n2025-04-01,20.5,10.0,5.5\n2025-04-02,22.0,11.5,6.0\n2025-04-03,19.5,9.5,4.5" > weather_data.csv
+Upload it to HDFS:
+
+bash
+hdfs dfs -mkdir -p /input
+hdfs dfs -put weather_data.csv /input/
+Step 3: Compile the Java Code
+Save the code as WeatherAverage.java.
+
+Compile it using Hadoop classpath:
+
+bash
+javac -classpath $(hadoop classpath) WeatherAverage.java
+Create a JAR file:
+
+bash
+jar cf weather_avg.jar WeatherAverage*.class
+Step 4: Run the Hadoop Job
+bash
+hadoop jar weather_avg.jar WeatherAverage /input/weather_data.csv /output
+Step 5: Check the Output
+bash
+hdfs dfs -cat /output/part-r-00000
+Expected Output:
+
+DewPoint    10.333333333333334
+Temperature 20.666666666666668
+WindSpeed   5.333333333333333
+Step 6: Clean Up (Optional)
+bash
+hdfs dfs -rm -r /output  # Remove output directory if re-running
+Troubleshooting
+"Class not found" error? → Ensure the JAR was created correctly.
+
+HDFS permission issues? → Run hdfs dfs -chmod -R 777 /input (not recommended for production).
+
+Hadoop not running? → Start Hadoop services with:
+
+bash
+start-dfs.sh
+start-yarn.sh
